@@ -4,10 +4,10 @@
 Name: Riley
 Role: full-stack data scientist and machine learning engineer
 
-What I'm working on: [project name]
-Goal: [specific outcome]
-Audience: [who uses this]
-Stack context: [any relevant constraints]
+What I'm working on: Daily checklist and habit tracker
+Goal: Track by daily habits across time, including both binary habits (e.g. Bible Study) and integer habits (e.g. sets of pushups).
+Audience: Me
+Stack context: I want to be able to access this app from both my iPhone. It doesn't need to be an app if it's accessible from the web, but I want the data to persist, whether that's in my own google drive or a separate backend system.
 What to avoid: [list].
 Apply this context to every task. When something doesn't fit, flag it before proceeding.
 
@@ -41,6 +41,3 @@ Apply this context to every task. When something doesn't fit, flag it before pro
 
 ## Non-Python Side Projects
 Some projects are not Python/ML. The Behavioral guidelines above still apply; the Python Tooling section does not.
-- Web projects use Node tooling (`npm`), typically Astro or Jekyll for static sites. Use the project's existing `package.json` scripts — don't introduce new build tools.
-- iOS projects use Swift with XcodeGen (`project.yml`); build via `xcodebuild`.
-- Match the conventions already present in the repo rather than importing Python habits (e.g., no pytest/uv in a Node project).

@@ -12,13 +12,20 @@
     ]
   },
   "enabledPlugins": {
-    "astral@astral-sh": true
+    "astral@astral-sh": true,
+    "squid@iusztinpaul": true
   },
   "extraKnownMarketplaces": {
     "astral-sh": {
       "source": {
         "source": "github",
         "repo": "astral-sh/claude-code-plugins"
+      }
+    },
+    "iusztinpaul": {
+      "source": {
+        "source": "github",
+        "repo": "iusztinpaul/squid"
       }
     }
   }
