@@ -4,11 +4,11 @@
 Name: Riley
 Role: full-stack data scientist and machine learning engineer
 
-What I'm working on: Daily checklist and habit tracker
-Goal: Track by daily habits across time, including both binary habits (e.g. Bible Study) and integer habits (e.g. sets of pushups).
+What I'm working on: Daily checklist and habit tracker (see SPEC.md — it is the source of truth for scope and design decisions)
+Goal: Track daily habits across time: binary habits (e.g. Bible Study), counter habits (grease-the-groove workout sets — each tap logs one set with a reps or seconds value, judged against a daily set target that varies by day of week and week parity), and measurement habits (e.g. tested max reps).
 Audience: Me
-Stack context: I want to be able to access this app from both my iPhone. It doesn't need to be an app if it's accessible from the web, but I want the data to persist, whether that's in my own google drive or a separate backend system.
-What to avoid: [list].
+Stack context: Decided — static PWA (no build step) hosted on GitHub Pages, backed by a Google Apps Script Web App writing to a Google Sheet in my Drive. Must be usable from my iPhone home screen; weeks run Sun–Sat.
+What to avoid: build tooling/bundlers, OAuth (shared-secret token is fine), program-aware training logic in v1, native app frameworks, multi-user features.
 Apply this context to every task. When something doesn't fit, flag it before proceeding.
 
 ## Behavioral guidelines
