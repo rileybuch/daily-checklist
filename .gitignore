@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+env/
+
+# uv
+.python-version
+
+# Node
+node_modules/
+
+# Secrets / environment
+.env
+.env.*
+
+# Notebooks
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+
+# Claude local settings (per-machine, not shared)
+.claude/settings.local.json
