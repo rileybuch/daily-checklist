@@ -106,6 +106,10 @@ export function createTodayController({
     getConfig: () => config,
     getSelectedDate: () => selectedDate,
 
+    /** Rules + the live (optimistic) event list — read-only reuse for the Week grid. */
+    getRules: () => rules,
+    getEvents: () => events,
+
     /** Switch the selected date (backfill). Re-render via rows() afterward. */
     setDate(date) {
       selectedDate = date;

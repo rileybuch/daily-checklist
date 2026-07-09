@@ -19,6 +19,7 @@ import { createSyncEngine } from "./data/sync.js";
 import { createTodayController } from "./controllers/todayController.js";
 import { newEventId } from "./data/ids.js";
 import { renderToday } from "./views/today.js";
+import { renderWeek } from "./views/week.js";
 import { createDemoTransport } from "./data/demoTransport.js";
 
 const CACHE_KEY = "dc.bootstrapCache";
@@ -84,6 +85,9 @@ async function main() {
 
   // Debounced background flush + re-render.
   let view = null;
+  let controller = null;
+  let activeView = "today"; // "today" | "week"
+  let viewRoot = null;
   let flushTimer = null;
   async function flushNow() {
     await sync.flush();
@@ -109,16 +113,56 @@ async function main() {
     });
   }
 
-  function mount(ctrl) {
-    return renderToday(root, ctrl, { todayIso: todayIso(), onActivity: scheduleFlush });
+  function mountActiveView() {
+    viewRoot.innerHTML = "";
+    if (activeView === "week") {
+      view = renderWeek(viewRoot, controller, {
+        todayIso: todayIso(),
+        // Backfill: tapping a past cell opens that date's Today view (SPEC 5.2).
+        onOpenDate: (iso) => {
+          controller.setDate(iso);
+          switchView("today");
+        },
+      });
+    } else {
+      view = renderToday(viewRoot, controller, { todayIso: todayIso(), onActivity: scheduleFlush });
+    }
+  }
+
+  function navBar() {
+    const nav = document.createElement("div");
+    nav.className = "view-nav";
+    for (const [name, label] of [["today", "Today"], ["week", "Week"]]) {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      if (name === activeView) {
+        btn.className = "active";
+      }
+      btn.addEventListener("click", () => switchView(name));
+      nav.appendChild(btn);
+    }
+    return nav;
+  }
+
+  function renderShell() {
+    root.innerHTML = "";
+    root.appendChild(navBar());
+    viewRoot = document.createElement("div");
+    viewRoot.className = "view-root";
+    root.appendChild(viewRoot);
+    mountActiveView();
+  }
+
+  function switchView(name) {
+    activeView = name;
+    renderShell();
   }
 
   // 2. Render instantly from cache if present.
-  let controller = null;
   const cached = readCache();
   if (cached) {
     controller = build(cached);
-    view = mount(controller);
+    renderShell();
   }
 
   // 3. Refresh bootstrap in the background (or do the initial load if no cache).
@@ -136,7 +180,7 @@ async function main() {
       view.rerender();
     } else {
       controller = build(bootstrapData);
-      view = mount(controller);
+      renderShell();
     }
   } catch (err) {
     if (!controller) {
