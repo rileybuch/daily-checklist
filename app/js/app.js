@@ -20,6 +20,8 @@ import { createTodayController } from "./controllers/todayController.js";
 import { newEventId } from "./data/ids.js";
 import { renderToday } from "./views/today.js";
 import { renderWeek } from "./views/week.js";
+import { renderTrends } from "./views/trends.js";
+import { renderStats } from "./views/stats.js";
 import { createDemoTransport } from "./data/demoTransport.js";
 
 const CACHE_KEY = "dc.bootstrapCache";
@@ -86,7 +88,7 @@ async function main() {
   // Debounced background flush + re-render.
   let view = null;
   let controller = null;
-  let activeView = "today"; // "today" | "week"
+  let activeView = "today"; // "today" | "week" | "trends" | "stats"
   let viewRoot = null;
   let flushTimer = null;
   async function flushNow() {
@@ -124,6 +126,10 @@ async function main() {
           switchView("today");
         },
       });
+    } else if (activeView === "trends") {
+      view = renderTrends(viewRoot, controller, { todayIso: todayIso() });
+    } else if (activeView === "stats") {
+      view = renderStats(viewRoot, controller, { todayIso: todayIso() });
     } else {
       view = renderToday(viewRoot, controller, { todayIso: todayIso(), onActivity: scheduleFlush });
     }
@@ -132,7 +138,7 @@ async function main() {
   function navBar() {
     const nav = document.createElement("div");
     nav.className = "view-nav";
-    for (const [name, label] of [["today", "Today"], ["week", "Week"]]) {
+    for (const [name, label] of [["today", "Today"], ["week", "Week"], ["trends", "Trends"], ["stats", "Stats"]]) {
       const btn = document.createElement("button");
       btn.textContent = label;
       if (name === activeView) {

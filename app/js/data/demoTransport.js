@@ -8,6 +8,8 @@
 // same event_id idempotency as the live backend, so what you see in demo mode is
 // faithful to production behavior.
 
+import { addDays } from "../core/dates.js";
+
 const SEED_HABITS = [
   { habit_id: "pushups", name: "Pushups", type: "counter", unit: "reps", sort_order: 1, active: true },
   { habit_id: "squats", name: "Squats", type: "counter", unit: "reps", sort_order: 2, active: true },
@@ -36,11 +38,58 @@ function seedRules() {
   ];
 }
 
-const SEED_EVENTS = [
-  // A couple of days of a "Pushup max" progression so the measurement row has history.
-  { event_id: "seed-m1", ts: "2026-06-01T07:00:00", date: "2026-06-01", habit_id: "pushup_max", kind: "measure", value: 40, undo_of: "" },
-  { event_id: "seed-m2", ts: "2026-06-20T07:00:00", date: "2026-06-20", habit_id: "pushup_max", kind: "measure", value: 44, undo_of: "" },
-];
+/**
+ * Two weeks of history relative to `anchor` (today), so every Trends chart and
+ * Stats card is populated when the app is opened with ?demo=1 — including a
+ * four-point "Pushup max" progression (SPEC AC #5). Dates are anchor-relative so
+ * the demo stays fresh whenever it is opened, not frozen to fixed calendar days.
+ * @param {string} anchor ISO date treated as "today"
+ * @returns {Array<object>} append-only event rows
+ */
+function seedEvents(anchor) {
+  const events = [];
+  let n = 0;
+  const add = (offset, habitId, kind, value, hh) =>
+    events.push({
+      event_id: `seed-${n++}`,
+      ts: `${addDays(anchor, offset)}T${hh || "07:30:00"}`,
+      date: addDays(anchor, offset),
+      habit_id: habitId,
+      kind,
+      value,
+      undo_of: "",
+    });
+  const logSets = (offset, habitId, count, base) => {
+    for (let i = 0; i < count; i += 1) {
+      add(offset, habitId, "set", base + (i % 3), `08:${String(10 + i).padStart(2, "0")}:00`);
+    }
+  };
+
+  // Four "Pushup max" measurements across test days (SPEC AC #5).
+  [[-40, 40], [-27, 43], [-13, 46], [-1, 49]].forEach(([offset, value]) =>
+    add(offset, "pushup_max", "measure", value),
+  );
+
+  // Counter habits over the last 14 days (targets: pushups/squats 6, wall_sits 4).
+  const pushups = [4, 6, 6, 0, 6, 5, 6, 6, 3, 6, 6, 4, 6, 2];
+  const squats = [6, 6, 3, 6, 6, 0, 6, 4, 6, 6, 2, 6, 6, 0];
+  const wallSits = [4, 3, 4, 0, 4, 4, 2, 4, 4, 0, 4, 3, 4, 1];
+  for (let k = 0; k < 14; k += 1) {
+    const offset = k - 13;
+    logSets(offset, "pushups", pushups[k], 10);
+    logSets(offset, "squats", squats[k], 15);
+    logSets(offset, "wall_sits", wallSits[k], 35);
+  }
+
+  // Bible Study (daily binary) — mostly done, one skip, one miss.
+  const bible = ["check", "check", "check", "skip", "check", "check", "check", "", "check", "check", "check", "check", "check", "check"];
+  for (let k = 0; k < 14; k += 1) {
+    if (bible[k]) {
+      add(k - 13, "bible_study", bible[k], "");
+    }
+  }
+  return events;
+}
 
 function jsonResponse(payload) {
   return { ok: true, status: 200, json: async () => payload };
@@ -54,7 +103,7 @@ function jsonResponse(payload) {
 export function createDemoTransport(anchorDate) {
   const anchor = anchorDate || new Date().toISOString().slice(0, 10);
   const config = { anchor_date: anchor, week_start: "sun" };
-  const events = SEED_EVENTS.slice();
+  const events = seedEvents(anchor);
   const seen = new Set(events.map((e) => e.event_id));
   const token = "demo-token";
 
