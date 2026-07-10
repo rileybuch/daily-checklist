@@ -58,12 +58,12 @@ function mount({ onOpenDate = () => {} } = {}) {
 }
 
 function rowByName(root, name) {
-  return root
-    .querySelectorAll(".week-row")
-    .find((r) => (r.querySelector(".week-habit") || {}).textContent === name);
+  return [...root.querySelectorAll(".week-row")].find(
+    (r) => (r.querySelector(".week-habit") || {}).textContent === name,
+  );
 }
 function cellOn(row, iso) {
-  return row.querySelectorAll(".week-cell").find((c) => c.dataset.date === iso);
+  return [...row.querySelectorAll(".week-cell")].find((c) => c.dataset.date === iso);
 }
 function classes(node) {
   return node.className.split(/\s+/);
@@ -71,7 +71,7 @@ function classes(node) {
 
 test("renders seven Sun–Sat day headers with dates for the current week", () => {
   const { dom, view } = mount();
-  const days = dom.root.querySelectorAll(".week-day");
+  const days = [...dom.root.querySelectorAll(".week-day")];
   assert.equal(days.length, 7);
   assert.deepEqual(days.map((d) => d.querySelector(".dow").textContent), ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
   assert.deepEqual(days.map((d) => d.querySelector(".dom").textContent), ["5", "6", "7", "8", "9", "10", "11"]);
@@ -80,7 +80,7 @@ test("renders seven Sun–Sat day headers with dates for the current week", () =
 
 test("renders one row per habit in sort_order with the habit name", () => {
   const { dom } = mount();
-  const names = dom.root.querySelectorAll(".week-habit").map((n) => n.textContent);
+  const names = [...dom.root.querySelectorAll(".week-habit")].map((n) => n.textContent);
   assert.deepEqual(names, ["Pushups", "Wall-sits", "Bible Study", "Pushup max"]);
 });
 
@@ -135,7 +135,7 @@ test("paging back re-renders the previous week's dates and label", () => {
   dom.root.querySelector(".nav-prev").click();
   assert.match(dom.root.querySelector(".week-label").textContent, /Jun 28 – Jul 4/);
   assert.deepEqual(
-    dom.root.querySelectorAll(".week-day").map((d) => d.querySelector(".dom").textContent),
+    [...dom.root.querySelectorAll(".week-day")].map((d) => d.querySelector(".dom").textContent),
     ["28", "29", "30", "1", "2", "3", "4"],
   );
   // Return to the current week via the next arrow.

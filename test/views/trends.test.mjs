@@ -57,15 +57,15 @@ function mount() {
 }
 
 function pickerButton(root, habitId) {
-  return root.querySelectorAll(".pick").find((b) => b.dataset.habit === habitId);
+  return [...root.querySelectorAll(".pick")].find((b) => b.dataset.habit === habitId);
 }
 function canvasHtml(root) {
-  return root.querySelectorAll(".chart-canvas").map((c) => c.innerHTML);
+  return [...root.querySelectorAll(".chart-canvas")].map((c) => c.innerHTML);
 }
 // The fake-DOM shim has no descendant combinator, so locate a card by kind then
 // read its canvas directly.
 function cardCanvas(root, kind) {
-  const card = root.querySelectorAll(".chart-card").find((c) => c.className.includes(`kind-${kind}`));
+  const card = [...root.querySelectorAll(".chart-card")].find((c) => c.className.includes(`kind-${kind}`));
   return card ? card.querySelector(".chart-canvas") : null;
 }
 function countIn(str, needle) {
@@ -74,14 +74,14 @@ function countIn(str, needle) {
 
 test("renders one picker button per active habit, first selected by default", () => {
   const { dom } = mount();
-  const picks = dom.root.querySelectorAll(".pick");
+  const picks = [...dom.root.querySelectorAll(".pick")];
   assert.deepEqual(picks.map((b) => b.textContent), ["Pushups", "Bible Study", "Pushup max", "Newbie"]);
   assert.ok(pickerButton(dom.root, "pushups").className.includes("active"));
 });
 
 test("counter habit (default) renders the five counter charts as inline SVG", () => {
   const { dom } = mount();
-  const kinds = dom.root.querySelectorAll(".chart-card").map((c) =>
+  const kinds = [...dom.root.querySelectorAll(".chart-card")].map((c) =>
     c.className.split(/\s+/).find((k) => k.startsWith("kind-")),
   );
   assert.deepEqual(
@@ -113,7 +113,7 @@ test("selecting the binary habit renders a completion chart and a heatmap", () =
   const { dom } = mount();
   pickerButton(dom.root, "bible_study").click();
   assert.ok(
-    dom.root.querySelectorAll(".chart-card").some((c) => c.className.includes("kind-weeklyCompletion")),
+    [...dom.root.querySelectorAll(".chart-card")].some((c) => c.className.includes("kind-weeklyCompletion")),
     "weekly completion present",
   );
   const hm = cardCanvas(dom.root, "heatmap");

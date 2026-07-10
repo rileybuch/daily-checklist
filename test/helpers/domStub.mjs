@@ -4,13 +4,51 @@
 // use (createElement, className/textContent, appendChild, setAttribute, style,
 // addEventListener + click dispatch, innerHTML reset) plus enough querying to
 // assert on the rendered tree.
+//
+// FIDELITY (see PR #1 rollup #008): the shim MUST mirror the real DOM contract
+// for the two accessors that previously hid on-device bugs, otherwise "green in
+// CI, broken in Safari" defects slip through:
+//   1. `Element.children` is a getter with NO setter — assigning to it throws a
+//      `TypeError` in strict mode (ES modules are always strict). We back it with
+//      a private `_children` array and expose a getter only.
+//   2. `querySelectorAll` returns a `NodeList`, which is iterable and indexable
+//      but has NO array methods (`.filter` / `.map` / `.find` / …). We return a
+//      `FakeNodeList`; call sites that need array methods must spread it first.
+
+/**
+ * A minimal `NodeList`-like: iterable, indexable, with `length`, `item`, and
+ * `forEach` — but deliberately WITHOUT `.filter` / `.map` / `.find` / `.some`,
+ * exactly like a real `NodeList`. This is what makes DOM-API misuse (calling
+ * array methods on a query result) fail the suite instead of passing.
+ */
+class FakeNodeList {
+  constructor(nodes) {
+    this.length = nodes.length;
+    for (let i = 0; i < nodes.length; i += 1) {
+      this[i] = nodes[i];
+    }
+    Object.defineProperty(this, "_nodes", { value: nodes, enumerable: false });
+  }
+
+  item(index) {
+    return this._nodes[index] ?? null;
+  }
+
+  forEach(callback, thisArg) {
+    this._nodes.forEach(callback, thisArg);
+  }
+
+  [Symbol.iterator]() {
+    return this._nodes[Symbol.iterator]();
+  }
+}
 
 class FakeElement {
   constructor(tag) {
     this.tagName = String(tag).toUpperCase();
     this.className = "";
     this.textContent = "";
-    this.children = [];
+    this._children = [];
     this.parentNode = null;
     this.attributes = {};
     this.style = {};
@@ -18,6 +56,12 @@ class FakeElement {
     this.disabled = false;
     this._listeners = {};
     this._innerHTML = "";
+  }
+
+  // Getter-only, like the real DOM: `element.children = ...` throws in strict
+  // mode. Internal mutation goes through `_children` / appendChild / innerHTML.
+  get children() {
+    return this._children;
   }
 
   setAttribute(key, value) {
@@ -35,7 +79,7 @@ class FakeElement {
   }
 
   appendChild(child) {
-    this.children.push(child);
+    this._children.push(child);
     child.parentNode = this;
     return child;
   }
@@ -58,7 +102,7 @@ class FakeElement {
   set innerHTML(value) {
     this._innerHTML = value;
     if (value === "") {
-      this.children = [];
+      this._children = [];
     }
   }
 
@@ -77,7 +121,7 @@ class FakeElement {
 
   /** Depth-first descendants (excludes self), in document order. */
   _descendants(out = []) {
-    for (const child of this.children) {
+    for (const child of this._children) {
       out.push(child);
       child._descendants(out);
     }
@@ -86,11 +130,12 @@ class FakeElement {
 
   querySelectorAll(selector) {
     const { tag, classes } = parseSelector(selector);
-    return this._descendants().filter((node) => matches(node, tag, classes));
+    const matched = this._descendants().filter((node) => matches(node, tag, classes));
+    return new FakeNodeList(matched);
   }
 
   querySelector(selector) {
-    return this.querySelectorAll(selector)[0] || null;
+    return this.querySelectorAll(selector).item(0);
   }
 }
 

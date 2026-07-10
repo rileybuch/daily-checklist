@@ -51,9 +51,9 @@ function mount() {
 }
 
 function cardFor(root, name) {
-  return root
-    .querySelectorAll(".manage-habit")
-    .find((c) => (c.querySelector(".habit-title") || {}).textContent === name);
+  return [...root.querySelectorAll(".manage-habit")].find(
+    (c) => (c.querySelector(".habit-title") || {}).textContent === name,
+  );
 }
 
 // --- Conditional unit field -------------------------------------------------
@@ -110,7 +110,7 @@ test("adding a duplicate-slug habit shows an error and does not post", async () 
 
   assert.equal(api.calls.habits.length, 0, "no POST on invalid input");
   const err = dom.root.querySelector(".habit-error");
-  assert.ok(err.querySelectorAll(".error").some((p) => /already exists/i.test(p.textContent)));
+  assert.ok([...err.querySelectorAll(".error")].some((p) => /already exists/i.test(p.textContent)));
 });
 
 // --- Edit habit (immutable id + type) --------------------------------------
@@ -238,7 +238,7 @@ test("a rule with effective_to before effective_from is rejected with no POST", 
 
   assert.equal(api.calls.rules.length, 0, "no POST on invalid rule");
   const err = cardFor(dom.root, "Pushups").querySelector(".rule-error");
-  assert.ok(err.querySelectorAll(".error").some((p) => /can't be before/i.test(p.textContent)));
+  assert.ok([...err.querySelectorAll(".error")].some((p) => /can't be before/i.test(p.textContent)));
 });
 
 test("'raise target' defaults effective_from to tomorrow and selects the weekdays", () => {
@@ -248,6 +248,47 @@ test("'raise target' defaults effective_from to tomorrow and selects the weekday
   editor.querySelector(".raise-target").click();
 
   assert.equal(editor.querySelector(".rule-from").value, controller.tomorrow());
-  const checked = editor.querySelectorAll(".rule-day").filter((b) => b.checked).map((b) => b.dataset.day);
+  const checked = [...editor.querySelectorAll(".rule-day")].filter((b) => b.checked).map((b) => b.dataset.day);
   assert.deepEqual(checked.sort(), ["fri", "mon", "thu", "tue", "wed"]);
+});
+
+// --- Regression: real-DOM fidelity (PR #1 rollup #008) ----------------------
+// These pin the two on-device Safari failures the loose shim previously masked:
+//   Bug 1 — assigning to `element.children` (getter-only) threw on Manage mount.
+//   Bug 2 — calling `.filter`/`.map` on a `querySelectorAll` NodeList threw when
+//           the Schedule editor opened / a rule was added.
+
+test("shim models Element.children as getter-only — assignment throws like Safari (bug 1 guard)", () => {
+  const dom = installDom();
+  const node = dom.document.createElement("div");
+  assert.throws(() => {
+    node.children = [];
+  }, TypeError);
+  dom.restore();
+});
+
+test("shim querySelectorAll returns an iterable NodeList without array methods (bug 2 guard)", () => {
+  const dom = installDom();
+  const parent = dom.document.createElement("div");
+  const child = dom.document.createElement("span");
+  child.className = "leaf";
+  parent.appendChild(child);
+
+  const nodes = parent.querySelectorAll(".leaf");
+  assert.equal(typeof nodes.filter, "undefined", "a real NodeList has no .filter");
+  assert.equal(typeof nodes.map, "undefined", "a real NodeList has no .map");
+  assert.equal(nodes.length, 1);
+  assert.deepEqual([...nodes], [child], "but it is still iterable (for...of / spread)");
+  dom.restore();
+});
+
+test("Manage mounts and its Schedule editor opens without throwing (bug 1 + bug 2)", () => {
+  const { dom } = mount();
+  // Bug 1: paint() ran on mount with no children-setter TypeError.
+  assert.ok(dom.root.querySelector(".manage"), "Manage view painted on mount");
+  // Bug 2: opening the editor runs readForm() → querySelectorAll(...).filter path.
+  assert.doesNotThrow(() => {
+    cardFor(dom.root, "Pushups").querySelector(".edit-schedule").click();
+  });
+  assert.ok(cardFor(dom.root, "Pushups").querySelector(".rule-editor"), "schedule editor opened");
 });

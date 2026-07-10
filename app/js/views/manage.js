@@ -105,7 +105,6 @@ export function renderManage(root, controller, { todayIso } = {}) {
   /** Render validation messages into an error box without a full re-paint. */
   function showErrors(box, errors) {
     box.innerHTML = "";
-    box.children = [];
     for (const message of errors) {
       box.appendChild(el("p", { class: "error", text: message }));
     }
@@ -127,7 +126,6 @@ export function renderManage(root, controller, { todayIso } = {}) {
     const unitSlot = el("div", { class: "unit-slot" });
     function renderUnitSlot() {
       unitSlot.innerHTML = "";
-      unitSlot.children = [];
       if (typeHasUnit(type.value)) {
         unitSlot.appendChild(
           el("input", { class: "habit-unit", attrs: { type: "text", placeholder: "unit (reps / seconds)" } }),
@@ -295,7 +293,7 @@ export function renderManage(root, controller, { todayIso } = {}) {
     const preview = el("p", { class: "rule-preview", text: "" });
 
     function readForm() {
-      const days = dayBoxes.querySelectorAll(".rule-day").filter((box) => box.checked).map((box) => box.dataset.day);
+      const days = [...dayBoxes.querySelectorAll(".rule-day")].filter((box) => box.checked).map((box) => box.dataset.day);
       return {
         days: days.length ? days : "*",
         week_parity: parity.value,
@@ -418,7 +416,6 @@ export function renderManage(root, controller, { todayIso } = {}) {
 
   function paint() {
     root.innerHTML = "";
-    root.children = [];
     const wrap = el("div", { class: "manage" });
     wrap.appendChild(addHabitForm());
 

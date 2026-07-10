@@ -62,4 +62,18 @@ Walked Riley's journeys (a)–(g), each rendered from the real modules:
 2. `unskip` is a valid SPEC §3 event kind but `binaryDayState` ignores it; the Today UI never emits `unskip` (tap toggles out of skip), so it is unreachable, not user-facing.
 3. `DEPLOY.md` §4.2 (computing the token hash) is slightly convoluted though it provides a working `_printMyHash` snippet — a doc-polish nit.
 
+### [PR Reviewer] 2026-07-09 22:10 — Review (rollup)
+
+**VERDICT: BLOCKERS**
+
+Read the entire diff (91 files, ~11,757 lines) against `git merge-base HEAD origin/dev`. Re-ran `node --test`: 307 pass / 0 fail. Reviewed all four dimensions (E skipped — no `docs/adr/` or `docs/glossary.md`). Backend token auth / hand-rolled SHA-256 / input validation / event_id idempotency, the SW `/exec` cache-bypass, and the domain core (target resolution, streak/completion, component-wise ISO date math) are all sound. Accepted SPEC trade-offs (shared-secret auth, last-write-wins, pre-first-event completion semantics, unreachable `unskip`, per-set value targets) were NOT filed as Blockers.
+
+Filed rollup task: `tracker/008-pr-review-rollup.groomed.md`.
+
+Blockers: 2 — both real-browser runtime bugs in `app/js/views/manage.js` (DOM-API misuse: assigning to getter-only `element.children` throws in strict-mode ES modules; `querySelectorAll(...).filter/.map` throws because `NodeList` has neither). Both are masked green by `test/helpers/domStub.mjs` (writable `children`, `Array`-returning `querySelectorAll`) — which is also why the PM's fake-DOM walkthrough of Manage passed. Confirmed the strict-mode `TypeError`s with an isolated repro. The Manage screen (SPEC view 5 / task #006) is non-functional on-device as shipped.
+
+Nits: 3 — unguarded `JSON.parse` at the Apps Script POST boundary; repeated `voidedEventIds` rescans on the stats cold path; the `domStub` divergence that hid both Blockers.
+
+Pipeline re-runs from inner loop on rollup #008; re-invoke me after PM ACCEPT + re-push.
+
 All acceptance criteria verified from the user's POV. If Riley opens this right now (in demo mode, or after following the runbooks for live sync), he will be satisfied. SWE may commit.

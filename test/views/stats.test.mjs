@@ -47,15 +47,15 @@ function mount() {
 }
 
 function cardFor(root, habitId) {
-  return root.querySelectorAll(".stat-card").find((c) => c.dataset.habit === habitId);
+  return [...root.querySelectorAll(".stat-card")].find((c) => c.dataset.habit === habitId);
 }
 function cellValues(card) {
-  return card.querySelectorAll(".stat-value").map((v) => v.textContent);
+  return [...card.querySelectorAll(".stat-value")].map((v) => v.textContent);
 }
 
 test("renders one card per active habit in sort order", () => {
   const { dom } = mount();
-  assert.deepEqual(dom.root.querySelectorAll(".stat-name").map((n) => n.textContent), ["Bible Study", "Pushup max", "Newbie"]);
+  assert.deepEqual([...dom.root.querySelectorAll(".stat-name")].map((n) => n.textContent), ["Bible Study", "Pushup max", "Newbie"]);
 });
 
 test("binary card shows current streak, best streak, and 30/90-day completion", () => {
