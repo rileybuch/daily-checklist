@@ -77,3 +77,22 @@ Nits: 3 — unguarded `JSON.parse` at the Apps Script POST boundary; repeated `v
 Pipeline re-runs from inner loop on rollup #008; re-invoke me after PM ACCEPT + re-push.
 
 All acceptance criteria verified from the user's POV. If Riley opens this right now (in demo mode, or after following the runbooks for live sync), he will be satisfied. SWE may commit.
+
+### [PR Reviewer] 2026-07-09 23:20 — Re-review (rollup #008 delta)
+
+**VERDICT: NO BLOCKERS**
+
+Second pass. Re-diffed the rollup delta only (`git diff 2f6cd93..HEAD`, commit `c92810d`) plus confirmed the two original Blockers are closed in the current source. Re-ran `node --test`: **310 pass / 0 fail**.
+
+Both original Blockers CONFIRMED CLOSED:
+- Blocker 1 (getter-only `element.children`): all three `X.children = []` assignments removed from `manage.js` (`showErrors`, `renderUnitSlot`, `paint`). `grep -rn "\.children\s*=" app/js` → zero hits. Shim now exposes `children` as a getter with no setter (backed by `_children`); the "children getter-only guard" regression test asserts assignment throws `TypeError`.
+- Blocker 2 (`NodeList` has no `.filter`/`.map`): `readForm` now spreads before array methods (`[...dayBoxes.querySelectorAll(".rule-day")].filter(...).map(...)`, line 296). Only other `querySelectorAll` in `app/js` is the `for...of` at line 332 (legal — iterable). Shim `querySelectorAll` now returns a `FakeNodeList` (iterable/indexable/`length`/`item`/`forEach`, NO array methods).
+
+Delta review (dimensions A–D):
+- Shim tightening strictly narrows fidelity — it does not loosen anything. `querySelector` switched from `[0] || null` to `.item(0)` (returns `_nodes[0] ?? null`), an equivalent. `_descendants` now walks `_children`. No behavioral loosening elsewhere.
+- Regression tests genuinely exercise both paths: "Manage mounts and its Schedule editor opens without throwing" runs `paint()` on mount (bug 1) and clicks `.edit-schedule` → `updatePreview()` (line 324) → `readForm()` (line 307) → the spread `querySelectorAll` (bug 2). Independently RED-reproduced by SWE (staged 12→5) and Tester (6-fail revert).
+- Test-side spreads in `stats`/`trends`/`week`/`manage` test helpers are faithful array equivalents of the previously-array-returning `querySelectorAll`; assertion semantics unchanged, nothing masked.
+
+New findings: none (0 Blockers, 0 new Nits). The addressed Nit 3 (shim fidelity) is resolved by this delta. Nits 1 (backend `JSON.parse` try/catch) and 2 (voided-set hoisting) remain acceptable/out-of-scope as filed on rollup #008.
+
+No rollup filed. Pipeline may advance to hand-off (subject to the outstanding [HUMAN] on-device Safari confirmation of the Manage screen, which is device-bound and not a PR-Reviewer gate).
