@@ -38,6 +38,10 @@ Apply this context to every task. When something doesn't fit, flag it before pro
 - When a test fails, run `uv run pytest --last-failed` first.
 - Prefer testing real code. Use doubles and `monkeypatch` only when necessary.
 - Favor `pytest` monkeypatch over other mocking approaches.
+- When faking a platform/browser API, mirror the real contract or the double hides the bugs it should catch. Specifically: DOM `Element.children` is a getter-only accessor (assigning to it throws in strict-mode ES modules), and `querySelectorAll` returns a `NodeList` (iterable, but no `.filter`/`.map`/`.reduce`) — not an `Array`. A shim that models these loosely will pass green while the code throws on-device.
+
+## Git Commits
+- When committing a renamed tracker/task file (e.g. moving `groomed`→`in-progress`→`done`), git may stage the pre-edit blob and drop your checkbox/log edits. After `git add`-ing the file, run `git diff --cached <path>` and confirm the staged blob shows the checked ACs and both `[SWE]` and `[Tester]` log entries before committing; re-`git add` the explicit path until it does.
 
 ## Non-Python Side Projects
 Some projects are not Python/ML. The Behavioral guidelines above still apply; the Python Tooling section does not.
