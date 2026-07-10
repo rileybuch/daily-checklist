@@ -22,6 +22,8 @@ import { renderToday } from "./views/today.js";
 import { renderWeek } from "./views/week.js";
 import { renderTrends } from "./views/trends.js";
 import { renderStats } from "./views/stats.js";
+import { renderManage } from "./views/manage.js";
+import { createManageController } from "./controllers/manageController.js";
 import { createDemoTransport } from "./data/demoTransport.js";
 
 const CACHE_KEY = "dc.bootstrapCache";
@@ -88,7 +90,8 @@ async function main() {
   // Debounced background flush + re-render.
   let view = null;
   let controller = null;
-  let activeView = "today"; // "today" | "week" | "trends" | "stats"
+  let manageController = null;
+  let activeView = "today"; // "today" | "week" | "trends" | "stats" | "manage"
   let viewRoot = null;
   let flushTimer = null;
   async function flushNow() {
@@ -105,6 +108,14 @@ async function main() {
   }
 
   function build(data) {
+    // Manage shares the same bootstrap arrays as Today, so archiving a habit or
+    // adding a rule here is reflected in Today/Week on the next render.
+    manageController = createManageController({
+      bootstrapData: data,
+      apiClient,
+      newId: newEventId,
+      todayIso: todayIso(),
+    });
     return createTodayController({
       bootstrapData: data,
       queue,
@@ -130,6 +141,8 @@ async function main() {
       view = renderTrends(viewRoot, controller, { todayIso: todayIso() });
     } else if (activeView === "stats") {
       view = renderStats(viewRoot, controller, { todayIso: todayIso() });
+    } else if (activeView === "manage") {
+      view = renderManage(viewRoot, manageController, { todayIso: todayIso() });
     } else {
       view = renderToday(viewRoot, controller, { todayIso: todayIso(), onActivity: scheduleFlush });
     }
@@ -138,7 +151,7 @@ async function main() {
   function navBar() {
     const nav = document.createElement("div");
     nav.className = "view-nav";
-    for (const [name, label] of [["today", "Today"], ["week", "Week"], ["trends", "Trends"], ["stats", "Stats"]]) {
+    for (const [name, label] of [["today", "Today"], ["week", "Week"], ["trends", "Trends"], ["stats", "Stats"], ["manage", "Manage"]]) {
       const btn = document.createElement("button");
       btn.textContent = label;
       if (name === activeView) {
