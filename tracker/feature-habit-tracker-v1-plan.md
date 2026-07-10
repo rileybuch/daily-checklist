@@ -37,3 +37,29 @@ Not applicable — this project opted out of ADRs and a glossary (`docs/adr/` an
 ## Open questions
 
 - None blocking plan approval. SPEC Open Question 1 (chart library: hand-rolled SVG vs. CDN lib) is deferred to #005 as designed and delegated to the SWE under the no-build-step constraint; it does not gate the plan.
+
+## Log
+
+### [PM] 2026-07-09 21:30 — Feature Acceptance Review
+
+**VERDICT: ACCEPT**
+
+Reviewed all 8 task records (SWE + Tester evidence), read the user-facing source, and independently drove the real `?demo=1` module chain (demoTransport → apiClient → queue → sync → controllers → views) headlessly through the fake-DOM shim. `make unit-tests` reproduced: 307 pass / 0 fail.
+
+Walked Riley's journeys (a)–(g), each rendered from the real modules:
+- (a) Today shows the 5 scheduled habits with live `n/target sets` and a friendly "Today · Fri Jul 10" header; empty state copy present ("Nothing scheduled for this day.").
+- (b) ＋ on Pushups increments the count instantly (2→3) before any network call, pre-fills reps from the previous set (11), the inline stepper edits the value (11→12) without changing the count, and undo decrements (3→2). All optimistic.
+- (c) Wall-sits ＋ logs a set with `unit === "seconds"` (value 35) — reps/seconds disambiguation confirmed.
+- (d) Week grid renders Sun–Sat headers, "This week · Jul 5 – 11", correct `n/target` text and color-state classes (counter amber/green/red, binary green/skip, measurement neutral) matching the GTG schedule.
+- (e) Trends picker lists all 5 habits; Pushups → 5 SVG chart cards (daily-vs-target bars, rolling-avg line, weekly total, volume); Pushup max → Progression line chart with 4 circles + 1 polyline (**SPEC AC #5**); Bible Study → weekly completion % + heatmap.
+- (f) Stats renders a card per habit (Bible Study streak 6/best 6; measurement card shows dashes — no daily state).
+- (g) Manage adds a habit (slug auto-derived `dips`), appends a forward-dated target rule (pushups 1→2 rules, old rule preserved), live weekly preview, and rejects duplicate slug + inverted date range with clear messages.
+
+**[HUMAN] criteria are correctly scoped, not failures.** Every live-Google / on-device criterion (SPEC AC #1 <3s cellular; the "row in the Sheet" halves of AC #2/#6; AC #7 legibility) is device-bound and has a complete copy-paste runbook: `backend/DEPLOY.md` (Sheet setup, deploy, curl smoke tests for token-auth 401, idempotency skip, legibility) and `docs/INSTALL.md` (Add to Home Screen, offline, release rollout). The logic underneath each is unit-verified: offline-queue idempotency (`sync.test`, force-close recovery), target resolution + 14-day GTG vectors (`targets.test`), streak/completion math (`stats.test`), SW precache list + `/exec` bypass (`sw-precache.test`).
+
+**Follow-up candidates (not defects, not grounds for reject — noted for a future round):**
+1. Completion %/streaks judge every scheduled past day, so a rule whose `effective_from` predates a habit's first event counts pre-start days as misses (visible as low demo 30/90-day %s). SPEC-consistent locked #002 semantics; a "floor completion at first event" option would be a separate #002 change (flagged by SWE + Tester).
+2. `unskip` is a valid SPEC §3 event kind but `binaryDayState` ignores it; the Today UI never emits `unskip` (tap toggles out of skip), so it is unreachable, not user-facing.
+3. `DEPLOY.md` §4.2 (computing the token hash) is slightly convoluted though it provides a working `_printMyHash` snippet — a doc-polish nit.
+
+All acceptance criteria verified from the user's POV. If Riley opens this right now (in demo mode, or after following the runbooks for live sync), he will be satisfied. SWE may commit.
