@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Daily Checklist</title>
+
+    <!-- PWA: installable to the iPhone home screen, shell loads offline (task #007). -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#2e7d32" />
+
+    <!-- iOS "Add to Home Screen": standalone chrome-less launch + home-screen icon. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Checklist" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+
+    <link rel="stylesheet" href="css/today.css" />
+    <link rel="stylesheet" href="css/week.css" />
+    <link rel="stylesheet" href="css/trends.css" />
+    <link rel="stylesheet" href="css/manage.css" />
+  </head>
+  <body>
+    <h1>Daily Checklist</h1>
+    <main id="app"></main>
+    <script type="module" src="js/app.js"></script>
+    <script>
+      // Register the service worker so the app shell loads offline. Feature-detected
+      // and best-effort: if service workers are unsupported or registration fails,
+      // the app still works fully online — the SW only adds offline shell caching.
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js", { type: "module", scope: "./" }).catch((err) => {
+            console.warn("service worker registration failed; app runs online-only", err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

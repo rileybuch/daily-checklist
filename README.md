@@ -19,6 +19,26 @@ Spec phase — no application code yet. [SPEC.md](SPEC.md) defines a static PWA 
 - Milestone 2: Today view with optimistic logging and an offline queue (app becomes daily-usable; retire the printout)
 - Open: chart library choice (hand-rolled SVG vs. CDN lib) — decide at Milestone 4
 
+## Development
+
+The app is **plain static files** (`app/`) — there is no build step, bundler, or transpiler. What you edit is what gets served and what GitHub Pages hosts.
+
+**Run the tests** (Node's built-in test runner, zero dependencies):
+
+```
+make unit-tests    # or: npm test
+```
+
+Both invoke `node --test` over `test/`. `make tests` also runs the integration target (a no-op until the Google Apps Script backend is deployed). `make pre-commit`, `make format-check`, and `make lint-check` are wired for the agent pipeline and exit 0 on this stack.
+
+**Serve the app locally** (desktop or iPhone on the same LAN):
+
+```
+npm run serve      # or: bash scripts/serve.sh
+```
+
+Then open `http://localhost:8000`. The server (`python3 -m http.server` rooted at `app/`) returns the source files byte-for-byte — no compile step runs.
+
 ## What This Replaces
 
 1. **Way of Life** (iPhone app) — binary habits only; no counts.

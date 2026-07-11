@@ -1,0 +1,38 @@
+name: Deploy PWA to GitHub Pages
+
+# Publishes the static app in app/ to GitHub Pages. No build step — the files are
+# served as-is. The site lands at https://<user>.github.io/<repo>/ (a project
+# subpath); the app's manifest, service worker, and imports all use relative paths
+# so it works under that subpath unchanged.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least-privilege permissions the Pages deploy needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One live deploy at a time; a newer push supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          # Serve only the static app; backend/, tracker/, test/ stay out of the site.
+          path: app
+      - id: deployment
+        uses: actions/deploy-pages@v4
