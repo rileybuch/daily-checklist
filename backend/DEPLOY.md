@@ -100,13 +100,21 @@ URL="https://script.google.com/macros/s/XXXXXXXX/exec"
 TOKEN="hunter2-correct-horse"
 ```
 
-> `-L` is required: Apps Script responds with a 302 redirect to a
+> **Pass the route as `?path=<name>`, not as a path suffix.** Use
+> `"$URL?path=bootstrap&token=$TOKEN"`, never `"$URL/bootstrap?token=$TOKEN"`.
+> Appending a segment after `/exec` (e.g. `/exec/bootstrap`) makes an anonymous
+> Apps Script Web App redirect the request to `accounts.google.com/ServiceLogin`
+> before your code runs — so `curl` gets an HTML sign-in page instead of JSON. The
+> `?path=` query form (which the app's own client and the adapter use) reaches the
+> script directly. `$URL` must end in `/exec` with nothing after it.
+>
+> `-L` is also required: Apps Script responds with a 302 redirect to a
 > `googleusercontent.com` URL that carries the actual JSON body.
 
 ### 6a. Bootstrap with the correct token → 200 JSON with four sections
 
 ```bash
-curl -sL "$URL/bootstrap?token=$TOKEN"
+curl -sSL "$URL?path=bootstrap&token=$TOKEN"
 ```
 
 Expect JSON like:
@@ -121,7 +129,7 @@ into the body (Apps Script always returns HTTP 200 at the transport level).
 ### 6b. Bootstrap with a wrong token → 401
 
 ```bash
-curl -sL "$URL/bootstrap?token=nope"
+curl -sSL "$URL?path=bootstrap&token=nope"
 ```
 
 Expect:
@@ -133,7 +141,7 @@ Expect:
 ### 6c. Post one event → `inserted:["evt-smoke-1"]`, row appears in the Sheet
 
 ```bash
-curl -sL "$URL/events?token=$TOKEN" \
+curl -sSL "$URL?path=events&token=$TOKEN" \
   -H "Content-Type: application/json" \
   -d '[{"event_id":"evt-smoke-1","ts":"2026-07-08T09:00:00","date":"2026-07-08","habit_id":"pushups","kind":"set","value":20,"undo_of":""}]'
 ```
@@ -149,7 +157,7 @@ Open the Sheet → `events` tab: a new row with `event_id = evt-smoke-1` is visi
 ### 6d. Idempotency check — re-post the same event → `skipped`
 
 ```bash
-curl -sL "$URL/events?token=$TOKEN" \
+curl -sSL "$URL?path=events&token=$TOKEN" \
   -H "Content-Type: application/json" \
   -d '[{"event_id":"evt-smoke-1","ts":"2026-07-08T09:00:00","date":"2026-07-08","habit_id":"pushups","kind":"set","value":20,"undo_of":""}]'
 ```
@@ -160,7 +168,7 @@ row** added to the `events` tab.
 ### 6e. (optional) Incremental events fetch
 
 ```bash
-curl -sL "$URL/events?token=$TOKEN&since=2026-07-01"
+curl -sSL "$URL?path=events&token=$TOKEN&since=2026-07-01"
 ```
 
 Returns `{"status":200,"events":[...]}` with only events whose `date >= 2026-07-01`.
@@ -178,8 +186,11 @@ Sheet doubles as the export format and the escape hatch.
 
 ## Endpoint reference
 
-All requests require `token` (query param). Paths use `/exec/<name>` (pathInfo);
-if your setup strips path segments, the adapter also accepts `?path=<name>`.
+All requests require `token` (query param). Pass the endpoint name as `?path=<name>`
+(e.g. `$URL?path=bootstrap&token=$TOKEN`). The adapter also reads `e.pathInfo`, but a
+`/exec/<name>` path suffix makes an anonymous Web App redirect to a Google sign-in
+page (see the note in Section 6), so `?path=` is the form to use — it's also what the
+app's own client sends.
 
 | Method | Path | Body | Returns |
 |---|---|---|---|
