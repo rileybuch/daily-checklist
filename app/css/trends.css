@@ -1,0 +1,165 @@
+/* Trends & Stats (M4) — mobile-first; reuses today.css tokens. Charts are
+   hand-rolled inline SVG (no build step, no CDN — see charts/svg.js). */
+
+/* Habit picker -------------------------------------------------------------- */
+.trend-picker {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+.trend-picker .pick {
+  flex: 0 0 auto;
+  min-height: var(--tap);
+  padding: 0 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+}
+.trend-picker .pick.active {
+  background: var(--pending);
+  color: #fff;
+  border-color: var(--pending);
+}
+
+/* Chart cards --------------------------------------------------------------- */
+.trend-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem 0.75rem;
+}
+.chart-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+}
+.chart-canvas {
+  width: 100%;
+}
+.chart-canvas .chart {
+  width: 100%;
+  height: 120px;
+  display: block;
+  overflow: visible;
+}
+.chart-canvas .chart-heatmap {
+  height: auto;
+}
+
+/* Line charts (progression, rolling average, average per set) */
+.spark-line {
+  fill: none;
+  stroke: var(--pending);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.spark-pt {
+  fill: var(--pending);
+}
+
+/* Bar charts (daily sets, weekly total, volume, completion) */
+.bar {
+  fill: var(--green);
+}
+.kind-volume .bar,
+.kind-weeklyTotal .bar {
+  fill: var(--pending);
+}
+.target-tick {
+  stroke: var(--red);
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Calendar heatmap (binary) */
+.chart-heatmap .hm {
+  stroke: #fff;
+  stroke-width: 1;
+}
+.hm-green {
+  fill: var(--green);
+}
+.hm-red {
+  fill: var(--red);
+}
+.hm-skip {
+  fill: var(--skip);
+}
+.hm-pending,
+.hm-unscheduled {
+  fill: #e8e8e8;
+}
+
+/* Empty state */
+.trend-body .empty {
+  color: #888;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* Stats --------------------------------------------------------------------- */
+.stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem 0.75rem;
+}
+.stat-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.stat-name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.stat-nodata {
+  font-size: 0.75rem;
+  color: #999;
+}
+.stat-cells {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+.stat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.4rem 0;
+  background: var(--bg);
+  border-radius: 8px;
+}
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

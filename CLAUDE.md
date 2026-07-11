@@ -4,11 +4,11 @@
 Name: Riley
 Role: full-stack data scientist and machine learning engineer
 
-What I'm working on: [project name]
-Goal: [specific outcome]
-Audience: [who uses this]
-Stack context: [any relevant constraints]
-What to avoid: [list].
+What I'm working on: Daily checklist and habit tracker (see SPEC.md — it is the source of truth for scope and design decisions)
+Goal: Track daily habits across time: binary habits (e.g. Bible Study), counter habits (grease-the-groove workout sets — each tap logs one set with a reps or seconds value, judged against a daily set target that varies by day of week and week parity), and measurement habits (e.g. tested max reps).
+Audience: Me
+Stack context: Decided — static PWA (no build step) hosted on GitHub Pages, backed by a Google Apps Script Web App writing to a Google Sheet in my Drive. Must be usable from my iPhone home screen; weeks run Sun–Sat.
+What to avoid: build tooling/bundlers, OAuth (shared-secret token is fine), program-aware training logic in v1, native app frameworks, multi-user features.
 Apply this context to every task. When something doesn't fit, flag it before proceeding.
 
 ## Behavioral guidelines
@@ -38,9 +38,10 @@ Apply this context to every task. When something doesn't fit, flag it before pro
 - When a test fails, run `uv run pytest --last-failed` first.
 - Prefer testing real code. Use doubles and `monkeypatch` only when necessary.
 - Favor `pytest` monkeypatch over other mocking approaches.
+- When faking a platform/browser API, mirror the real contract or the double hides the bugs it should catch. Specifically: DOM `Element.children` is a getter-only accessor (assigning to it throws in strict-mode ES modules), and `querySelectorAll` returns a `NodeList` (iterable, but no `.filter`/`.map`/`.reduce`) — not an `Array`. A shim that models these loosely will pass green while the code throws on-device.
+
+## Git Commits
+- When committing a renamed tracker/task file (e.g. moving `groomed`→`in-progress`→`done`), git may stage the pre-edit blob and drop your checkbox/log edits. After `git add`-ing the file, run `git diff --cached <path>` and confirm the staged blob shows the checked ACs and both `[SWE]` and `[Tester]` log entries before committing; re-`git add` the explicit path until it does.
 
 ## Non-Python Side Projects
 Some projects are not Python/ML. The Behavioral guidelines above still apply; the Python Tooling section does not.
-- Web projects use Node tooling (`npm`), typically Astro or Jekyll for static sites. Use the project's existing `package.json` scripts — don't introduce new build tools.
-- iOS projects use Swift with XcodeGen (`project.yml`); build via `xcodebuild`.
-- Match the conventions already present in the repo rather than importing Python habits (e.g., no pytest/uv in a Node project).

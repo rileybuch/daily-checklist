@@ -1,0 +1,140 @@
+/* Manage screens — add/edit/archive habits + edit target rules.
+   Mobile-first; reuses the shared design tokens from today.css. */
+
+.manage {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.manage-add-habit,
+.edit-habit-form,
+.add-rule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.manage .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.manage .field.readonly {
+  opacity: 0.7;
+}
+.manage label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted, #667);
+}
+.manage input,
+.manage select {
+  min-height: var(--tap);
+  font-size: 1rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg, #fff);
+  color: var(--ink);
+}
+
+.manage button {
+  min-height: var(--tap);
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+}
+
+.habit-slug-preview {
+  font-family: ui-monospace, monospace;
+  color: var(--muted, #667);
+}
+
+.manage-habit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.manage-habit {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+.manage-habit.archived {
+  opacity: 0.55;
+}
+.habit-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.habit-title {
+  font-weight: 700;
+}
+.habit-meta {
+  font-size: 0.8rem;
+  color: var(--muted, #667);
+}
+.habit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.habit-actions button {
+  flex: 1;
+}
+
+.rule-editor {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+}
+.habit-preview,
+.rule-preview {
+  font-weight: 600;
+}
+.rule-preview {
+  color: var(--muted, #667);
+}
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+.rule-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.25rem 0;
+}
+.rule-item .rule-target {
+  font-weight: 700;
+}
+.rule-days-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.rule-days-picker .day-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.error {
+  color: var(--red, #c0392b);
+  font-size: 0.85rem;
+  margin: 0.15rem 0;
+}

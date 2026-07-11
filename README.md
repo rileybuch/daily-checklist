@@ -1,15 +1,45 @@
-# project-template
+# Daily Checklist and Habit Tracker
 
-Starter template for new projects. Includes everything I normally set up at the start of a project:
+A personal, mobile-first habit tracker that merges Way of Life–style binary habit tracking with counted grease-the-groove workout sets — full spec in [SPEC.md](SPEC.md).
 
-- `CLAUDE.md` — Claude Code instructions: behavioral guidelines, Python tooling (uv, ruff, ty, pytest), code quality and testing standards. Fill in the `[bracketed]` placeholders in the **About Me** section for each new project.
-- `.claude/settings.json` — shared Claude Code permissions for common test/lint/type-check commands, plus the [astral-sh plugin](https://github.com/astral-sh/claude-code-plugins) (skills for `uv`, `ruff`, and `ty`) declared via `enabledPlugins`. On a machine without the plugin, Claude Code will prompt to install it from the official marketplace.
-- `.gitignore` — Python, Node, notebooks, macOS, editor cruft.
+## Project Status
 
-## Usage
+**Last Updated:** 2026-07-08
 
-Click **Use this template** on GitHub (or `gh repo create <name> --template rileybuch/project-template`), then:
+### Current State
+Spec phase — no application code yet. [SPEC.md](SPEC.md) defines a static PWA (GitHub Pages) backed by a Google Apps Script JSON API writing to a Google Sheet in Riley's Drive. Three habit types: binary (green/red/skip), counter (tap-per-set with reps/seconds values, judged against a daily set target), and measurement (e.g. tested max reps). Targets vary by day of week and week parity via dated `target_rules`, replacing the printed 8-week GTG calendar.
 
-1. Update `CLAUDE.md` placeholders for the new project.
-2. For Python projects: `uv init` and `uv add --dev pytest ruff ty`.
-3. Replace this README.
+### Recent Changes
+- Wrote SPEC.md v1: architecture, Sheet data model (`habits`, `target_rules`, `events`, `config`), API surface, views, acceptance criteria, milestones
+- Resolved open questions: weeks run Sun–Sat; wall-sits are counters with seconds per set; every set log captures an editable reps/seconds value
+- Repo bootstrapped from the project starter template (CLAUDE.md, `.claude/settings.json`, `.gitignore`)
+
+### Up Next / Open Questions
+- Milestone 1: create the Google Sheet schema and Apps Script endpoints with token auth, verified via `curl`
+- Milestone 2: Today view with optimistic logging and an offline queue (app becomes daily-usable; retire the printout)
+- Open: chart library choice (hand-rolled SVG vs. CDN lib) — decide at Milestone 4
+
+## Development
+
+The app is **plain static files** (`app/`) — there is no build step, bundler, or transpiler. What you edit is what gets served and what GitHub Pages hosts.
+
+**Run the tests** (Node's built-in test runner, zero dependencies):
+
+```
+make unit-tests    # or: npm test
+```
+
+Both invoke `node --test` over `test/`. `make tests` also runs the integration target (a no-op until the Google Apps Script backend is deployed). `make pre-commit`, `make format-check`, and `make lint-check` are wired for the agent pipeline and exit 0 on this stack.
+
+**Serve the app locally** (desktop or iPhone on the same LAN):
+
+```
+npm run serve      # or: bash scripts/serve.sh
+```
+
+Then open `http://localhost:8000`. The server (`python3 -m http.server` rooted at `app/`) returns the source files byte-for-byte — no compile step runs.
+
+## What This Replaces
+
+1. **Way of Life** (iPhone app) — binary habits only; no counts.
+2. **A printed Google Sheet** — an 8-week grease-the-groove calendar (pushups, pullups, squats, wall-sits) with per-day set circles; no history or trends.

@@ -1,0 +1,10 @@
+{
+  "name": "daily-checklist",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Daily checklist and habit tracker — static PWA, no build step. Dev-only package manifest.",
+  "scripts": {
+    "test": "node --test",
+    "serve": "bash scripts/serve.sh"
+  }
+}
